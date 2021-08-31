@@ -6,7 +6,7 @@ namespace csv {
 CsvParsingError::CsvParsingError(const std::string& msg) 
     : std::runtime_error(msg) {}
 
-CsvReader::CsvReader(std::fstream& stream) : stream_{stream} {}
+CsvReader::CsvReader(std::istream& stream) : stream_{stream} {}
 
 CsvReader::~CsvReader() {}
 
@@ -15,19 +15,26 @@ std::vector<Row> CsvReader::Read() {
         return {};
     }
 
-    std::vector<Row> result;
-    const auto first_row = ReadRow();
-    const auto columns_count = first_row.size();
-    size_t column_index = 1;
-    
+    std::vector<Row> result;    
+    bool is_columns_count_defined = false;
+    size_t columns_count = 0;
+    size_t row_index = 0;
+
     while (IsStreamOk()) {
-        const auto row = ReadRow();
-        if (row.size() != columns_count) {
+        row_index++;
+        auto row = ReadRow();
+        if (row.empty()) {
+            continue;
+        }
+        
+        if (!is_columns_count_defined) {
+            columns_count = row.size();
+            is_columns_count_defined = true;
+        } else if (row.size() != columns_count) {
             throw CsvParsingError(
-                "invalid columns count on line " + std::to_string(column_index));
+                "invalid columns count on line " + std::to_string(row_index));
         }
         result.push_back(std::move(row));
-        column_index++;
     }
 
     return result;
@@ -36,6 +43,10 @@ std::vector<Row> CsvReader::Read() {
 Row CsvReader::ReadRow() {
     std::string line;
     std::getline(stream_, line);
+
+    if (line.empty()) {
+        return {};
+    }
 
     std::vector<std::string> result;
     auto begin_it = line.cbegin();
@@ -48,6 +59,7 @@ Row CsvReader::ReadRow() {
             ++end_it;
         }
     }
+    result.emplace_back(begin_it, end_it);
     return result;
 }
 

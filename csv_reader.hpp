@@ -1,6 +1,6 @@
 #pragma once
 
-#include <fstream>
+#include <iostream>
 #include <vector>
 #include <string>
 
@@ -18,7 +18,7 @@ class CsvReader {
 public:
     static constexpr char kDelimiter = ',';
 
-    explicit CsvReader(std::fstream& stream);
+    explicit CsvReader(std::istream& stream);
     ~CsvReader();
 
     std::vector<Row> Read();
@@ -29,7 +29,7 @@ private:
     Row ReadRow();
     bool IsStreamOk() const;
 
-    std::fstream& stream_;
+    std::istream& stream_;
 };
 
 } // namespace::csv
