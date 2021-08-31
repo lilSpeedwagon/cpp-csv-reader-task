@@ -2,30 +2,35 @@ CC=g++
 INCLUDES=-I./thirdparty/ -I./
 CFLAGS=-c -Wall $(INCLUDES)
 
-SOURCES=main.cpp csv_reader.cpp
-TESTS=./tests/csv_reader_test.cpp csv_reader.cpp
+MAIN=main.cpp
+SOURCES=csv_reader.cpp
+TESTS=./tests/csv_reader_test.cpp
+MAIN_OBJ=main.o
 OBJECTS=$(SOURCES:.cpp=.o)
 TESTS_OBJECTS=$(subst tests/,,$(TESTS:.cpp=.o))
 
-EXECUTABLE=cpp-csv-reader
-TEST_EXECUTABLE=cpp-csv-reader-test
+EXECUTABLE=cpp-csv-reader.out
+TEST_EXECUTABLE=cpp-csv-reader-test.out
 
 
 all: build
 
-build: $(OBJECTS)
-	$(CC) $(OBJECTS) -o $(EXECUTABLE)
+build: $(OBJECTS) $(MAIN_OBJ)
+	$(CC) $(OBJECTS) $(MAIN_OBJ) -o $(EXECUTABLE)
 
-compile: $(SOURCES)
+$(OBJECTS): $(SOURCES)
 	$(CC) $(CFLAGS) $(SOURCES)
+
+$(MAIN_OBJ): $(MAIN)
+	$(CC) $(CFLAGS) $(MAIN)
 
 test: build-test
 	./$(TEST_EXECUTABLE)
 
-build-test: compile-test
-	$(CC) $(TESTS_OBJECTS) -o $(TEST_EXECUTABLE)
+build-test: $(TESTS_OBJECTS) $(OBJECTS)
+	$(CC) $(TESTS_OBJECTS) $(OBJECTS) -o $(TEST_EXECUTABLE)
 
-compile-test: $(TESTS)
+$(TESTS_OBJECTS): $(TESTS)
 	$(CC) $(CFLAGS) $(TESTS)
 
 clean:
